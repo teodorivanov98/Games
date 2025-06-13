@@ -1,19 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>2D Collector</title>
-  <link rel="stylesheet" href="../style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>2D Collector Game</title>
   <style>
-    canvas { background: #000; display: block; margin: 1rem auto; }
+    body {
+      background: #222;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas {
+      display: block;
+      margin: 20px auto;
+      background: #444;
+      border: 2px solid #fff;
+    }
   </style>
 </head>
 <body>
-  <header><h1>2D Collector</h1></header>
-  <main>
-    <canvas id="gameCanvas" width="512" height="512"></canvas>
-  </main>
-  <footer><p><a href="../index.html">Back to Home</a></p></footer>
-  <script src="../js/2d-collector.js"></script>
+  <h1>💎 2D Collector</h1>
+  <canvas id="gameCanvas" width="512" height="224"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const tileSize = 32;
+    const keys = {};
+
+    let level = parseInt(localStorage.getItem("level")) || 0;
+    const levels = [
+      [
+        "................",
+        "..P.......D.....",
+        ".....T..........",
+        ".............D..",
+        "....T...........",
+        ".............X..",
+        "................"
+      ],
+      [
+        "................",
+        "..P...T...D.....",
+        ".....D......T...",
+        ".............D..",
+        "....T.....D.....",
+        ".............X..",
+        "................"
+      ]
+    ];
+
+    const player = {
+      x: parseInt(localStorage.getItem("px")) || 1,
+      y: parseInt(localStorage.getItem("py")) || 1,
+      collected: parseInt(localStorage.getItem("collected")) || 0,
+      health: parseFloat(localStorage.getItem("health")) || 15
+    };
+
+    const sprites = {
+      trap: new Image(),
+      diamond: new Image(),
+      exit: new Image(),
+      player: new Image()
+    };
+    sprites.trap.src = "assets/images/trap.png";
+    sprites.diamond.src = "assets/images/diamond.png";
+    sprites.exit.src = "assets/images/exit.png";
+    sprites.player.src = "assets/images/player.png";
+
+    const sounds = {
+      collect: new Audio("assets/sounds/collect.wav"),
+      trap: new Audio("assets/sounds/trap.wav"),
+      win: new Audio("assets/sounds/win.wav")
+    };
+
+    function drawImageTile(x, y, img) {
+      ctx.drawImage(img, x * tileSize, y * tileSize, tileSize, tileSize);
+    }
+
+    function drawHUD() {
+      ctx.fillStyle = "white";
+      ctx.font = "16px Arial";
+      ctx.fillText(\`Health: \${player.health.toFixed(1)} | Diamonds: \${player.collected} | Level: \${level + 1}\`, 10, 20);
+    }
+
+    function drawMap() {
+      const map = levels[level];
+      for (let y = 0; y < map.length; y++) {
+        for (let x = 0; x < map[y].length; x++) {
+          const cell = map[y][x];
+          if (cell === "T") drawImageTile(x, y, sprites.trap);
+          else if (cell === "D") drawImageTile(x, y, sprites.diamond);
+          else if (cell === "X") drawImageTile(x, y, sprites.exit);
+        }
+      }
+    }
+
+    function drawPlayer() {
+      drawImageTile(player.x, player.y, sprites.player);
+    }
+
+    function update() {
+      const map = levels[level];
+      if (keys["w"] && player.y > 0) player.y--;
+      else if (keys["s"] && player.y < map.length - 1) player.y++;
+      else if (keys["a"] && player.x > 0) player.x--;
+      else if (keys["d"] && player.x < map[0].length - 1) player.x++;
+
+      const current = map[player.y][player.x];
+
+      if (current === "D") {
+        map[player.y] = map[player.y].substring(0, player.x) + "." + map[player.y].substring(player.x + 1);
+        player.collected++;
+        sounds.collect.play();
+      } else if (current === "T") {
+        player.health -= 0.3;
+        sounds.trap.play();
+        if (player.health <= 0) {
+          alert("You died! Game over.");
+          resetGame();
+        }
+      } else if (current === "X" && player.collected >= 3) {
+        sounds.win.play();
+        level++;
+        if (level >= levels.length) {
+          alert("You win! Game complete.");
+          resetGame();
+        } else {
+          player.x = 1;
+          player.y = 1;
+          player.collected = 0;
+          player.health = 15;
+        }
+      }
+      saveGame();
+    }
+
+    function saveGame() {
+      localStorage.setItem("level", level);
+      localStorage.setItem("px", player.x);
+      localStorage.setItem("py", player.y);
+      localStorage.setItem("collected", player.collected);
+      localStorage.setItem("health", player.health);
+    }
+
+    function resetGame() {
+      level = 0;
+      player.x = 1;
+      player.y = 1;
+      player.collected = 0;
+      player.health = 15;
+      saveGame();
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawMap();
+      update();
+      drawPlayer();
+      drawHUD();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+    document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+
+    gameLoop();
+  </script>
 </body>
 </html>
