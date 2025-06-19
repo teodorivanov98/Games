@@ -4,6 +4,27 @@
   <meta charset="UTF-8">
   <title>2D Collector</title>
   <link rel="stylesheet" href="../css/2d-collector.css">
+  <style>
+    #home-button {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 1000;
+      transition: background-color 0.3s;
+    }
+
+    #home-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
   <div id="stats"></div>
@@ -11,6 +32,9 @@
   <canvas id="gameCanvas"></canvas>
   <div id="shop"></div>
   <div id="death-overlay"></div>
+
+  <button id="home-button" onclick="location.href='../index.html'">Return Home</button>
+
   <script src="../js/2d-collector.js"></script>
 </body>
 </html>
