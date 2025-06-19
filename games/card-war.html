@@ -2,29 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Card War</title>
-  <link rel="stylesheet" href="../style.css" />
   <link rel="stylesheet" href="../css/card-war.css" />
 </head>
 <body>
-  <header><h1>Card War</h1></header>
+  <header>
+    <h1>Card War</h1>
+  </header>
   <main>
     <div id="game">
-      <button id="drawBtn">Draw Cards</button>
+      <button id="startBtn">Start Round</button>
       <div id="cards-container">
-        <div class="card" id="player-card">
-          <img class="front" src="../assets/images/backofacard.png" alt="Card Back" />
-          <img class="back" src="" alt="Player Card" />
-        </div>
         <div class="card" id="computer-card">
-          <img class="front" src="../assets/images/backofacard.png" alt="Card Back" />
-          <img class="back" src="" alt="Computer Card" />
+          <div class="card-inner">
+            <img class="front" src="../assets/images/backofacard.png" alt="Card Back" />
+            <img class="back" src="" alt="Computer Card" />
+          </div>
+          <div class="label">Computer</div>
+        </div>
+        <div class="card" id="player-card">
+          <div class="card-inner">
+            <img class="front" src="../assets/images/backofacard.png" alt="Card Back" />
+            <img class="back" src="" alt="Player Card" />
+          </div>
+          <div class="label">You</div>
         </div>
       </div>
       <div id="result"></div>
     </div>
   </main>
-  <footer><p><a href="../index.html">Back to Home</a></p></footer>
+  <footer>
+    <p><a href="../index.html">Back to Home</a></p>
+  </footer>
 
   <script src="../js/card-war.js"></script>
 </body>
