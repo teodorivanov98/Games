@@ -1,12 +1,748 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Call of Cthulhu Adventure</title>
-  <link rel="stylesheet" href="../css/cthulu.css" />
+  <meta charset="UTF-8">
+  <title>Call of Cthulu Game</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;
+    }
+    .screen {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .bg-img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      object-position: center center;
+      z-index: 0;
+      background: #000;
+    }
+    .location {
+      max-width: 11vw;
+      max-height: 11vh;
+      min-width: 48px;
+      min-height: 48px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      object-position: center center;
+      display: block;
+    }
+    /* Small corner images for inn, bar, guild, blacksmith */
+    .corner-img {
+      position: absolute;
+      left: 2vw;
+      bottom: 2vh;
+      width: 120px;
+      max-width: 18vw;
+      height: auto;
+      z-index: 2;
+      opacity: 0.93;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      background: rgba(0,0,0,0.08);
+    }
+    .bubble {
+      position: absolute;
+      left: 50%;
+      bottom: 6vh;
+      transform: translateX(-50%);
+      min-width: 180px;
+      max-width: 320px;
+      background: rgba(30, 30, 40, 0.92);
+      border-radius: 14px;
+      padding: 14px 12px 12px 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+      z-index: 3;
+      color: #fff;
+      font-size: 1em;
+    }
+    .centered {
+      position: absolute;
+      left: 50%;
+      top: 60%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+    /* Player panel on the right, vertically centered, bigger */
+    .player-panel-container {
+      position: absolute;
+      top: 50px;
+      right: 2vw;
+      width: 240px;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .player-stats-bar {
+      width: 220px;
+      margin-bottom: 12px;
+      background: rgba(30,30,40,0.85);
+      border-radius: 10px;
+      padding: 8px 0 2px 0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.16);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .player-stats-bar .hp-bar-img {
+      width: 180px;
+      display: block;
+    }
+    .player-stats-bar .hp-text {
+      margin-top: -22px;
+      color: #fff;
+      font-size: 1.15em;
+      font-weight: bold;
+      text-shadow: 0 0 4px #000;
+    }
+    .player-stats-bar .atk-text {
+      margin-top: 8px;
+      color: #fff;
+      font-size: 1.1em;
+      font-weight: bold;
+    }
+    .character-preview#charPreview {
+      background: rgba(20, 20, 30, 0.93);
+      border-radius: 18px;
+      padding: 28px 14px 18px 14px;
+      min-width: 200px;
+      max-width: 240px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.28);
+      text-align: center;
+      font-size: 1.18em;
+    }
+    .character-preview#charPreview img {
+      width: 100px;
+      height: auto;
+      margin-bottom: 14px;
+    }
+    #inventoryIcons img {
+      width: 32px;
+      height: 32px;
+    }
+    .button {
+      margin: 6px 0;
+      padding: 8px 18px;
+      border-radius: 8px;
+      background: #2d3a5a;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background 0.15s;
+    }
+    .button:hover {
+      background: #3e4b6a;
+    }
+    .option-group {
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
   <div id="game-root"></div>
-  <script src="../js/cthulu.js"></script>
+  <script>
+    // --- JS START ---
+    const root = document.getElementById('game-root');
+    const CLASSES = [ 'rogue', 'mage', 'warrior', 'paladin', 'thief', 'knight', 'villager', 'reviewer' ];
+    const SEXES = ['male', 'female'];
+    const QUESTS = [
+      { name: "Goblin", img: "quest1.png", fight: "goblinfight.png", monster: { name: "Goblin", hp: 10, attack: 1 } },
+      { name: "Kobold", img: "quest2.png", fight: "koboldfight.png", monster: { name: "Kobold", hp: 12, attack: 2 } },
+      { name: "Shapeshifter", img: "quest3.png", fight: "shapeshifterfight.png", monster: { name: "Shapeshifter", hp: 14, attack: 3 } },
+      { name: "Kapa", img: "quest4.png", fight: "kapafight.png", monster: { name: "Kapa", hp: 18, attack: 4 } },
+      { name: "Dragon", img: "quest5.png", fight: "dragonfight.png", monster: { name: "Dragon", hp: 25, attack: 7 } }
+    ];
+    const EQUIPMENT = [
+      { name: "cocshield", label: "Shield", cost: 2, bonus: { hp: 0, attack: 0 } },
+      { name: "sword", label: "Sword", cost: 2, bonus: { hp: 0, attack: 2 } },
+      { name: "staff", label: "Staff", cost: 2, bonus: { hp: 0, attack: 2 } },
+      { name: "dagger", label: "Dagger", cost: 2, bonus: { hp: 0, attack: 2 } },
+      { name: "armor", label: "Armor", cost: 2, bonus: { hp: 5, attack: 0 } },
+      { name: "helmet", label: "Helmet", cost: 2, bonus: { hp: 5, attack: 0 } },
+      { name: "necklace", label: "Necklace", cost: 2, bonus: { hp: 5, attack: 0 } },
+      { name: "rizz", label: "Rizz", cost: 10, bonus: { hp: 0, attack: 10 } }
+    ];
+    let player = {
+      class: null,
+      sex: null,
+      hp: 15,
+      maxHp: 15,
+      attack: 2,
+      gold: 10,
+      level: 1,
+      inventory: [],
+      completedQuest: false
+    };
+
+    function updateStatsByLevel() {
+      switch (player.level) {
+        case 1: player.maxHp = 15; player.attack = 2; break;
+        case 2: player.maxHp = 20; player.attack = 4; break;
+        case 3: player.maxHp = 25; player.attack = 6; break;
+        case 4: player.maxHp = 30; player.attack = 8; break;
+        case 5: player.maxHp = 40; player.attack = 10; break;
+        default: player.maxHp = 15; player.attack = 2;
+      }
+      let hpBonus = 0, atkBonus = 0;
+      for (const item of player.inventory) {
+        const eq = EQUIPMENT.find(e => e.name === item);
+        if (eq) {
+          hpBonus += eq.bonus.hp;
+          atkBonus += eq.bonus.attack;
+        }
+      }
+      player.maxHp += hpBonus;
+      player.attack += atkBonus;
+      if (player.hp > player.maxHp) player.hp = player.maxHp;
+    }
+
+    function showPlayScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/load.png" class="bg-img" alt="Load Game" />
+          <button class="button centered" id="playBtn">Play</button>
+        </div>
+      `;
+      document.getElementById('playBtn').onclick = showCustomizeScreen;
+    }
+
+    function showCustomizeScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/customize.png" class="bg-img" alt="Customize" />
+          <div class="bubble" style="margin-top: 80px;">
+            <h2>Customize your character</h2>
+            <div class="customize-options">
+              <div class="option-group">
+                <label>Class:</label>
+                ${CLASSES.map(cls => `<button class="button class-btn" data-class="${cls}">${cls.charAt(0).toUpperCase() + cls.slice(1)}</button>`).join('')}
+              </div>
+              <div class="option-group">
+                <label>Sex:</label>
+                ${SEXES.map(sex => `<button class="button sex-btn" data-sex="${sex}">${sex.charAt(0).toUpperCase() + sex.slice(1)}</button>`).join('')}
+              </div>
+            </div>
+            <div id="continueBtnContainer"></div>
+          </div>
+          <div class="player-panel-container" style="top: 120px;">
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      let selectedClass = null;
+      let selectedSex = null;
+      function updatePreview() {
+        if (selectedClass && selectedSex) {
+          document.getElementById('charPreview').innerHTML = `<img src="../assets/images/${selectedSex}${selectedClass}.png" alt="Character" />`;
+          document.getElementById('continueBtnContainer').innerHTML = `<button class="button" id="continueBtn" style="float:right;">Continue</button>`;
+          document.getElementById('continueBtn').onclick = () => {
+            player.class = selectedClass;
+            player.sex = selectedSex;
+            showWelcomeScreen();
+          };
+        }
+      }
+      document.querySelectorAll('.class-btn').forEach(btn => {
+        btn.onclick = () => { selectedClass = btn.dataset.class; updatePreview(); };
+      });
+      document.querySelectorAll('.sex-btn').forEach(btn => {
+        btn.onclick = () => { selectedSex = btn.dataset.sex; updatePreview(); };
+      });
+    }
+
+    function showWelcomeScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/welcome.png" class="bg-img" alt="Welcome" />
+          <div class="bubble" style="margin-top: 80px;">
+            <h2>Welcome to Call of Cthulu</h2>
+            <p>
+              Welcome, brave adventurer! The world is full of dangers and mysteries.<br>
+              Choose your path and begin your journey!...
+            </p>
+            <button class="button" id="toMapBtn">Continue</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('toMapBtn').onclick = showMapScreen;
+    }
+
+    function showPlayerPanel() {
+      updateStatsByLevel();
+      return `
+        <div class="character-preview" id="charPreview">
+          <img src="../assets/images/${player.sex ?? "male"}${player.class ?? "rogue"}.png" alt="Character" />
+          <div style="color:#fff;">Gold: ${player.gold}</div>
+          <div style="color:#fff;">Level: ${player.level}</div>
+          <div style="margin-top:10px; color:#fff;">Inventory:</div>
+          <div id="inventoryIcons" style="display:flex; gap:8px; margin-top:6px; justify-content:center;">
+            ${player.inventory.map(item => `<img src="../assets/images/${item}.png" alt="${item}" />`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function showPlayerStatsBar() {
+      updateStatsByLevel();
+      return `
+        <div class="player-stats-bar">
+          <img src="../assets/images/hpbar.png" class="hp-bar-img" alt="HP Bar" />
+          <div class="hp-text">${player.hp}/${player.maxHp} HP</div>
+          <div class="atk-text">Attack: ${player.attack}</div>
+        </div>
+      `;
+    }
+
+    function showMapScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/map.png" class="bg-img" alt="Map" />
+          <div style="position:relative; width:100%; height:100%;">
+            <div style="position:absolute; left:120px; top:120px;">
+              <img src="../assets/images/bar.png" class="location" id="barLoc" alt="Bar" />
+            </div>
+            <div style="position:absolute; left:320px; top:220px;">
+              <img src="../assets/images/inn.png" class="location" id="innLoc" alt="Inn" />
+            </div>
+            <div style="position:absolute; left:520px; top:180px;">
+              <img src="../assets/images/guild.png" class="location" id="guildLoc" alt="Guild" />
+            </div>
+            <div style="position:absolute; left:700px; top:320px;">
+              <img src="../assets/images/blacksmith.png" class="location" id="blacksmithLoc" alt="Blacksmith" />
+            </div>
+            <div id="goThereBtnContainer"></div>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      [
+        {id: 'barLoc', fn: () => showLocationPrompt('Bar', showBarScreen)},
+        {id: 'innLoc', fn: () => showLocationPrompt('Inn', showInnScreen)},
+        {id: 'guildLoc', fn: () => showLocationPrompt('Guild', showGuildScreen)},
+        {id: 'blacksmithLoc', fn: () => showLocationPrompt('Blacksmith', showBlacksmithScreen)}
+      ].forEach(loc => {
+        const el = document.getElementById(loc.id);
+        if (el) el.onclick = loc.fn;
+      });
+    }
+
+    function showLocationPrompt(name, callback) {
+      const btnDiv = document.getElementById('goThereBtnContainer');
+      btnDiv.innerHTML = `<button class="button" id="goBtn">Go to ${name}</button>`;
+      document.getElementById('goBtn').onclick = callback;
+    }
+
+    // --- Inn ---
+    function showInnScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/innkeeper.png" class="bg-img" alt="Inn" />
+          <img src="../assets/images/inn.png" class="corner-img" alt="Inn" />
+          <div class="bubble">
+            <div>What would you like?</div>
+            <button class="button" id="stayBtn">Stay at the inn (1 gold)</button>
+            <button class="button" id="eatBtn">Eat (1 gold)</button>
+            <button class="button" id="backBtn">Back to Map</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      document.getElementById('stayBtn').onclick = () => {
+        if (player.gold < 1) { alert("Not enough gold!"); return; }
+        player.gold -= 1; player.hp = player.maxHp;
+        root.innerHTML = `
+          <div class="screen">
+            <img src="../assets/images/sleeping.png" class="bg-img" alt="Sleeping" />
+            <div class="bubble">
+              <div>You have rested and fully recovered!</div>
+              <button class="button" id="wakeBtn">Wake up</button>
+            </div>
+            <div class="player-panel-container">
+              ${showPlayerStatsBar()}
+              ${showPlayerPanel()}
+            </div>
+          </div>
+        `;
+        document.getElementById('wakeBtn').onclick = showMapScreen;
+      };
+      document.getElementById('eatBtn').onclick = () => {
+        if (player.gold < 1) { alert("Not enough gold!"); return; }
+        player.gold -= 1;
+        root.innerHTML = `
+          <div class="screen">
+            <img src="../assets/images/eating.png" class="bg-img" alt="Eating" />
+            <div class="bubble">
+              <div>You ate a hearty meal.</div>
+              <button class="button" id="outBtn">Go out</button>
+            </div>
+            <div class="player-panel-container">
+              ${showPlayerStatsBar()}
+              ${showPlayerPanel()}
+            </div>
+          </div>
+        `;
+        document.getElementById('outBtn').onclick = showMapScreen;
+      };
+      document.getElementById('backBtn').onclick = showMapScreen;
+    }
+
+    // --- Bar ---
+    function showBarScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/barkeeper.png" class="bg-img" alt="Bar" />
+          <img src="../assets/images/bar.png" class="corner-img" alt="Bar" />
+          <div class="bubble">
+            <div>What would you like?</div>
+            <button class="button" id="aleBtn">Drink ale (1 gold)</button>
+            <button class="button" id="wineBtn">Drink wine (1 gold)</button>
+            <button class="button" id="whiskyBtn">Drink whisky (1 gold)</button>
+            <button class="button" id="milkBtn">Drink milk (1 gold)</button>
+            <button class="button" id="rizzBtn">Rizz the bar lady</button>
+            <button class="button" id="backBtn">Back to Map</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      function drink(type) {
+        if (player.gold < 1) { alert("Not enough gold!"); return; }
+        player.gold -= 1;
+        root.innerHTML = `
+          <div class="screen">
+            <img src="../assets/images/drink${type}.png" class="bg-img" alt="Drink" />
+            <div class="bubble">
+              <div>You drank ${type}.</div>
+              <button class="button" id="getOutBtn">Get out</button>
+            </div>
+            <div class="player-panel-container">
+              ${showPlayerStatsBar()}
+              ${showPlayerPanel()}
+            </div>
+          </div>
+        `;
+        document.getElementById('getOutBtn').onclick = showMapScreen;
+      }
+      document.getElementById('aleBtn').onclick = () => drink("ale");
+      document.getElementById('wineBtn').onclick = () => drink("wine");
+      document.getElementById('whiskyBtn').onclick = () => drink("whisky");
+      document.getElementById('milkBtn').onclick = () => drink("milk");
+      document.getElementById('rizzBtn').onclick = showBarRizzScreen;
+      document.getElementById('backBtn').onclick = showMapScreen;
+    }
+
+    // --- Guild ---
+    function showGuildScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/guildkeeper.png" class="bg-img" alt="Guild" />
+          <img src="../assets/images/guild.png" class="corner-img" alt="Guild" />
+          <div class="bubble">
+            <div>What would you like?</div>
+            <button class="button" id="questBoardBtn">Look at the quest board</button>
+            <button class="button" id="completeQuestBtn">Complete quest</button>
+            <button class="button" id="rizzBtn">Rizz the guild keeper</button>
+            <button class="button" id="backBtn">Back to Map</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      document.getElementById('questBoardBtn').onclick = showQuestBoard;
+      document.getElementById('completeQuestBtn').onclick = () => {
+        if (player.completedQuest) {
+          player.gold += 10;
+          player.completedQuest = false;
+          alert("You received 10 gold!");
+        } else {
+          alert("No completed quest!");
+        }
+        showGuildScreen();
+      };
+      document.getElementById('rizzBtn').onclick = showGuildRizzScreen;
+      document.getElementById('backBtn').onclick = showMapScreen;
+    }
+
+    // --- Blacksmith ---
+    function showBlacksmithScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/blacksmithkeeper.png" class="bg-img" alt="Blacksmith" />
+          <img src="../assets/images/blacksmith.png" class="corner-img" alt="Blacksmith" />
+          <div class="bubble">
+            <div>Welcome to the Blacksmith!</div>
+            <button class="button" id="buyBtn">Buy Equipment</button>
+            <button class="button" id="backBtn">Back to Map</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      document.getElementById('buyBtn').onclick = showBlacksmithBuyScreen;
+      document.getElementById('backBtn').onclick = showMapScreen;
+    }
+
+    function showBlacksmithBuyScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/blacksmithkeeper.png" class="bg-img" alt="Blacksmith" />
+          <img src="../assets/images/blacksmith.png" class="corner-img" alt="Blacksmith" />
+          <div class="bubble">
+            <div>Buy Equipment:</div>
+            ${EQUIPMENT.map(eq => `<div><img src="../assets/images/${eq.name}.png" style="width:32px;vertical-align:middle;"> <button class="button" id="buy_${eq.name}">${eq.label} (${eq.cost} gold)</button></div>`).join('')}
+            <button class="button" id="backBtn">Back</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      EQUIPMENT.forEach(eq => {
+        document.getElementById(`buy_${eq.name}`).onclick = () => {
+          if (player.gold < eq.cost) { alert("Not enough gold!"); return; }
+          if (player.inventory.includes(eq.name)) { alert("You already own this!"); return; }
+          player.gold -= eq.cost;
+          player.inventory.push(eq.name);
+          alert(`You bought ${eq.label}!`);
+          showBlacksmithBuyScreen();
+        };
+      });
+      document.getElementById('backBtn').onclick = showBlacksmithScreen;
+    }
+
+    // --- Rizz and Quest Board screens (unchanged, but add player panel and stats bar as above) ---
+    function showBarRizzScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/rizzbar.png" class="bg-img" alt="Rizz Bar Lady" />
+          <img src="../assets/images/bar.png" class="corner-img" alt="Bar" />
+          <div class="bubble">
+            <div>What do you say?... </div>
+            <button class="button" id="hiBtn">Hi you are beautiful</button>
+            <button class="button" id="goOutBtn">Wanna go out</button>
+            <button class="button" id="buyDrinkBtn">Wanna buy you a drink</button>
+            <button class="button" id="comeBtn">Wanna come home</button>
+            <button class="button" id="backBtn">Back</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      document.getElementById('hiBtn').onclick = () => showBarRizzResult("hi");
+      document.getElementById('goOutBtn').onclick = () => showBarRizzResult("gout");
+      document.getElementById('buyDrinkBtn').onclick = () => showBarRizzResult("buydrink");
+      document.getElementById('comeBtn').onclick = () => showBarRizzResult("come");
+      document.getElementById('backBtn').onclick = showBarScreen;
+    }
+
+    function showBarRizzResult(type) {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/${type}.png" class="bg-img" alt="Rizz Result" />
+          <img src="../assets/images/bar.png" class="corner-img" alt="Bar" />
+          <div class="bubble">
+            <div>Well, that was interesting.</div>
+            <button class="button" id="backBtn">Back to Bar</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      document.getElementById('backBtn').onclick = showBarScreen;
+    }
+
+    function showGuildRizzScreen() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/rizzbar.png" class="bg-img" alt="Rizz Guild Keeper" />
+          <img src="../assets/images/guild.png" class="corner-img" alt="Guild" />
+          <div class="bubble">
+            <div>What do you say?</div>
+            <button class="button" id="hiBtn">Hi you are beautiful</button>
+            <button class="button" id="goOutBtn">Wanna go out</button>
+            <button class="button" id="buyDrinkBtn">Wanna buy you a drink</button>
+            <button class="button" id="comeBtn">Wanna come home</button>
+            <button class="button" id="backBtn">Back</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      document.getElementById('hiBtn').onclick = () => showGuildRizzResult("hi");
+      document.getElementById('goOutBtn').onclick = () => showGuildRizzResult("gout");
+      document.getElementById('buyDrinkBtn').onclick = () => showGuildRizzResult("buydrink");
+      document.getElementById('comeBtn').onclick = () => showGuildRizzResult("come");
+      document.getElementById('backBtn').onclick = showGuildScreen;
+    }
+
+    function showGuildRizzResult(type) {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/${type}.png" class="bg-img" alt="Rizz Result" />
+          <img src="../assets/images/guild.png" class="corner-img" alt="Guild" />
+          <div class="bubble">
+            <div>Well, that was interesting.</div>
+            <button class="button" id="backBtn">Back to Guild</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      document.getElementById('backBtn').onclick = showGuildScreen;
+    }
+
+    function showQuestBoard() {
+      root.innerHTML = `
+        <div class="screen">
+          <img src="../assets/images/quest.png" class="bg-img" alt="Quest Board" />
+          <div class="bubble">
+            <div>Choose a quest:</div>
+            ${QUESTS.map((q, i) => `<div><img src="../assets/images/${q.img}" style="width:60px;vertical-align:middle;"> <button class="button" onclick="window._startQuest(${i})">${q.name}</button></div>`).join('')}
+            <button class="button" id="exitBtn">Exit</button>
+          </div>
+          <div class="player-panel-container">
+            ${showPlayerStatsBar()}
+            ${showPlayerPanel()}
+          </div>
+        </div>
+      `;
+      window._startQuest = startQuest;
+      document.getElementById('exitBtn').onclick = showGuildScreen;
+    }
+
+    function startQuest(idx) {
+      showFightScreen(QUESTS[idx]);
+    }
+
+    function showFightScreen(quest) {
+      player.hp = player.maxHp;
+      let monster = { ...quest.monster, curHp: quest.monster.hp };
+      let playerDefend = false, monsterDefend = false;
+      function render() {
+        root.innerHTML = `
+          <div class="screen">
+            <img src="../assets/images/${quest.fight}" class="bg-img" alt="Fight" />
+            <div class="bubble">
+              <div>Fighting: ${monster.name}</div>
+              <div>Monster HP: ${monster.curHp} / ${monster.hp}</div>
+              <div>Your HP: ${player.hp} / ${player.maxHp}</div>
+              <button class="button" id="attackBtn">Attack</button>
+              <button class="button" id="defendBtn">Defend</button>
+              <button class="button" id="runBtn">Run</button>
+              <div id="fightMsg"></div>
+            </div>
+            <div class="player-panel-container">
+              ${showPlayerStatsBar()}
+              ${showPlayerPanel()}
+            </div>
+          </div>
+        `;
+        document.getElementById('attackBtn').onclick = () => fightTurn('attack');
+        document.getElementById('defendBtn').onclick = () => fightTurn('defend');
+        document.getElementById('runBtn').onclick = showQuestBoard;
+      }
+      function fightTurn(action) {
+        let msg = "";
+        if (action === 'attack') {
+          let dmg = player.attack - (monsterDefend ? 1 : 0);
+          if (dmg < 1) dmg = 1;
+          monster.curHp -= dmg;
+          msg += `You attack for ${dmg} damage!<br>`;
+        } else if (action === 'defend') {
+          playerDefend = true;
+          msg += `You defend!<br>`;
+        }
+        if (monster.curHp > 0) {
+          let monsterAction = Math.random() < 0.7 ? 'attack' : 'defend';
+          if (monsterAction === 'attack') {
+            let dmg = monster.attack - (playerDefend ? 1 : 0);
+            if (dmg < 1) dmg = 1;
+            player.hp -= dmg;
+            msg += `Monster attacks for ${dmg} damage!`;
+          } else {
+            monsterDefend = true;
+            msg += `Monster defends!`;
+          }
+        }
+        if (monster.curHp <= 0) {
+          player.completedQuest = true;
+          root.innerHTML = `
+            <div class="screen">
+              <img src="../assets/images/victory.png" class="bg-img" alt="Victory" />
+              <div class="bubble">
+                <div>You defeated the ${monster.name}!</div>
+                <button class="button" id="backBtn">Back to Guild</button>
+              </div>
+              <div class="player-panel-container">
+                ${showPlayerStatsBar()}
+                ${showPlayerPanel()}
+              </div>
+            </div>
+          `;
+          document.getElementById('backBtn').onclick = showGuildScreen;
+          return;
+        }
+        if (player.hp <= 0) {
+          root.innerHTML = `
+            <div class="screen">
+              <img src="../assets/images/defeat.png" class="bg-img" alt="Defeat" />
+              <div class="bubble">
+                <div>You were defeated!</div>
+                <button class="button" id="backBtn">Back to Map</button>
+              </div>
+              <div class="player-panel-container">
+                ${showPlayerStatsBar()}
+                ${showPlayerPanel()}
+              </div>
+            </div>
+          `;
+          document.getElementById('backBtn').onclick = showMapScreen;
+          return;
+        }
+        document.getElementById('fightMsg').innerHTML = msg;
+        playerDefend = false; monsterDefend = false;
+      }
+      render();
+    }
+
+    // Start the game
+    showPlayScreen();
+    // --- JS END ---
+  </script>
 </body>
 </html>
