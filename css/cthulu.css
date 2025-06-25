@@ -1,4 +1,4 @@
-/* Reset and base styles */
+
 html, body {
   margin: 0;
   padding: 0;
@@ -10,7 +10,7 @@ html, body {
   color: #fff;
 }
 
-/* Main screen container */
+
 .screen {
   position: relative;
   width: 100vw;
@@ -19,7 +19,7 @@ html, body {
   box-sizing: border-box;
 }
 
-/* Background image styling */
+
 .bg-img {
   position: absolute;
   top: 0; left: 0;
@@ -31,7 +31,7 @@ html, body {
   background: #000;
 }
 
-/* Location icons */
+
 .location {
   max-width: 11vw;
   max-height: 11vh;
@@ -44,7 +44,7 @@ html, body {
   display: block;
 }
 
-/* Small corner images */
+
 .corner-img {
   position: absolute;
   left: 2vw;
@@ -59,7 +59,7 @@ html, body {
   background: rgba(0,0,0,0.08);
 }
 
-/* Speech bubble style */
+
 .bubble {
   position: absolute;
   left: 50%;
@@ -76,7 +76,7 @@ html, body {
   font-size: 1em;
 }
 
-/* Centered elements */
+
 .centered {
   position: absolute;
   left: 50%;
@@ -85,7 +85,7 @@ html, body {
   z-index: 3;
 }
 
-/* Player panel container */
+
 .player-panel-container {
   position: absolute;
   top: 50px;
@@ -97,7 +97,7 @@ html, body {
   align-items: center;
 }
 
-/* Character preview panel */
+
 .character-preview#charPreview {
   background: rgba(20, 20, 30, 0.93);
   border-radius: 18px;
@@ -118,7 +118,7 @@ html, body {
   box-shadow: 0 0 10px #0af;
 }
 
-/* Player stats bar */
+
 .player-stats-bar {
   width: 220px;
   margin-bottom: 12px;
@@ -150,7 +150,7 @@ html, body {
   font-weight: bold;
 }
 
-/* Inventory section container */
+
 #inventorySection {
   position: absolute;
   top: 50px;
@@ -199,7 +199,7 @@ html, body {
   box-shadow: 0 0 12px #ff0;
 }
 
-/* Buttons */
+
 .button {
   margin: 6px 0;
   padding: 8px 18px;
@@ -218,7 +218,7 @@ html, body {
   background: #3e4b6a;
 }
 
-/* Option groups */
+
 .option-group {
   margin-bottom: 10px;
 }

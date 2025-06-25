@@ -39,7 +39,7 @@
       object-position: center center;
       display: block;
     }
-    /* Small corner images for inn, bar, guild, blacksmith */
+
     .corner-img {
       position: absolute;
       left: 2vw;
@@ -75,7 +75,7 @@
       transform: translate(-50%, -50%);
       z-index: 3;
     }
-    /* Player panel on the right, vertically centered, bigger */
+
     .player-panel-container {
       position: absolute;
       top: 50px;
@@ -155,7 +155,6 @@
 <body>
   <div id="game-root"></div>
   <script>
-    // --- JS START ---
     const root = document.getElementById('game-root');
     const SEXES = ['male', 'female'];
     const CLASSES = [ 'rogue', 'mage', 'warrior', 'paladin', 'thief', 'knight', 'villager', 'reviewer' ];
@@ -351,7 +350,7 @@
       document.getElementById('goBtn').onclick = callback;
     }
 
-    // --- Inn ---
+
     function showInnScreen() {
       root.innerHTML = `
         <div class="screen">
@@ -408,7 +407,7 @@
       document.getElementById('backBtn').onclick = showMapScreen;
     }
 
-    // --- Bar ---
+
     function showBarScreen() {
       root.innerHTML = `
         <div class="screen">
@@ -455,7 +454,7 @@
       document.getElementById('backBtn').onclick = showMapScreen;
     }
 
-    // --- Guild ---
+
     function showGuildScreen() {
       root.innerHTML = `
         <div class="screen">
@@ -489,7 +488,7 @@
       document.getElementById('backBtn').onclick = showMapScreen;
     }
 
-    // --- Blacksmith ---
+
     function showBlacksmithScreen() {
       root.innerHTML = `
         <div class="screen">
@@ -539,7 +538,7 @@
       document.getElementById('backBtn').onclick = showBlacksmithScreen;
     }
 
-    // --- Rizz and Quest Board screens (unchanged, but add player panel and stats bar as above) ---
+
     function showBarRizzScreen() {
       root.innerHTML = `
         <div class="screen">

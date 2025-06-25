@@ -33,7 +33,7 @@ function updateStatsByLevel() {
     case 5: player.maxHp = 40; player.attack = 10; break;
     default: player.maxHp = 15; player.attack = 2;
   }
-  // Add equipment bonuses
+
   let hpBonus = 0, atkBonus = 0;
   for (const item of player.inventory) {
     const eq = EQUIPMENT.find(e => e.name === item);
@@ -198,7 +198,6 @@ function showInnScreen() {
   document.getElementById('backBtn').onclick = showMapScreen;
 }
 
-// --- Bar ---
 function showBarScreen() {
   root.innerHTML = `
     <div class="screen">
