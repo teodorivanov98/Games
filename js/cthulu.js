@@ -1,11 +1,12 @@
 const root = document.getElementById('game-root');
-const CLASSES = [ 'rogue', 'mage', 'warrior', 'paladin', 'thief', 'knight', 'villager', 'reviewer' ];
 const SEXES = ['male', 'female'];
+const CLASSES = [ 'rogue', 'mage', 'warrior', 'paladin', 'thief', 'knight', 'villager', 'reviewer' ];
+
 const QUESTS = [
   { name: "Goblin", img: "quest1.png", fight: "goblinfight.png", monster: { name: "Goblin", hp: 10, attack: 1 } },
   { name: "Kobold", img: "quest2.png", fight: "koboldfight.png", monster: { name: "Kobold", hp: 12, attack: 2 } },
   { name: "Shapeshifter", img: "quest3.png", fight: "shapeshifterfight.png", monster: { name: "Shapeshifter", hp: 14, attack: 3 } },
-  { name: "Kapa", img: "quest4.png", fight: "kapafight.png", monster: { name: "Kapa", hp: 18, attack: 4 } },
+  { name: "Kappa", img: "quest4.png", fight: "kappafight.png", monster: { name: "Kappa", hp: 18, attack: 4 } },
   { name: "Dragon", img: "quest5.png", fight: "dragonfight.png", monster: { name: "Dragon", hp: 25, attack: 7 } }
 ];
 const EQUIPMENT = [
@@ -62,14 +63,14 @@ function showCustomizeScreen() {
       <img src="../assets/images/customize.png" class="bg-img" alt="Customize" />
       <div class="bubble" style="margin-top: 80px;">
         <h2>Customize your character</h2>
+         <div class="option-group">
+            <label>Sex:</label>
+            ${SEXES.map(sex => `<button class="button sex-btn" data-sex="${sex}">${sex.charAt(0).toUpperCase() + sex.slice(1)}</button>`).join('')}
+          </div>
         <div class="customize-options">
           <div class="option-group">
             <label>Class:</label>
             ${CLASSES.map(cls => `<button class="button class-btn" data-class="${cls}">${cls.charAt(0).toUpperCase() + cls.slice(1)}</button>`).join('')}
-          </div>
-          <div class="option-group">
-            <label>Sex:</label>
-            ${SEXES.map(sex => `<button class="button sex-btn" data-sex="${sex}">${sex.charAt(0).toUpperCase() + sex.slice(1)}</button>`).join('')}
           </div>
         </div>
         <div id="continueBtnContainer"></div>

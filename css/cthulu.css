@@ -1,3 +1,4 @@
+/* Reset and base styles */
 html, body {
   margin: 0;
   padding: 0;
@@ -5,13 +6,20 @@ html, body {
   height: 100vh;
   overflow: hidden;
   background: #000;
+  font-family: Arial, sans-serif;
+  color: #fff;
 }
+
+/* Main screen container */
 .screen {
   position: relative;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  box-sizing: border-box;
 }
+
+/* Background image styling */
 .bg-img {
   position: absolute;
   top: 0; left: 0;
@@ -22,6 +30,8 @@ html, body {
   z-index: 0;
   background: #000;
 }
+
+/* Location icons */
 .location {
   max-width: 11vw;
   max-height: 11vh;
@@ -33,6 +43,8 @@ html, body {
   object-position: center center;
   display: block;
 }
+
+/* Small corner images */
 .corner-img {
   position: absolute;
   left: 2vw;
@@ -46,6 +58,8 @@ html, body {
   box-shadow: 0 2px 12px rgba(0,0,0,0.18);
   background: rgba(0,0,0,0.08);
 }
+
+/* Speech bubble style */
 .bubble {
   position: absolute;
   left: 50%;
@@ -61,6 +75,8 @@ html, body {
   color: #fff;
   font-size: 1em;
 }
+
+/* Centered elements */
 .centered {
   position: absolute;
   left: 50%;
@@ -68,6 +84,8 @@ html, body {
   transform: translate(-50%, -50%);
   z-index: 3;
 }
+
+/* Player panel container */
 .player-panel-container {
   position: absolute;
   top: 50px;
@@ -78,6 +96,29 @@ html, body {
   flex-direction: column;
   align-items: center;
 }
+
+/* Character preview panel */
+.character-preview#charPreview {
+  background: rgba(20, 20, 30, 0.93);
+  border-radius: 18px;
+  padding: 28px 14px 18px 14px;
+  min-width: 200px;
+  max-width: 240px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.28);
+  text-align: center;
+  font-size: 1.18em;
+  margin-bottom: 14px;
+}
+
+.character-preview#charPreview img {
+  width: 32px;
+  height: auto;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #0af;
+}
+
+/* Player stats bar */
 .player-stats-bar {
   width: 220px;
   margin-bottom: 12px;
@@ -88,44 +129,77 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: #fff;
 }
+
 .player-stats-bar .hp-bar-img {
   width: 180px;
   display: block;
 }
+
 .player-stats-bar .hp-text {
   margin-top: -22px;
-  color: #fff;
   font-size: 1.15em;
   font-weight: bold;
   text-shadow: 0 0 4px #000;
 }
+
 .player-stats-bar .atk-text {
   margin-top: 8px;
-  color: #fff;
   font-size: 1.1em;
   font-weight: bold;
 }
-.character-preview#charPreview {
+
+/* Inventory section container */
+#inventorySection {
+  position: absolute;
+  top: 50px;
+  left: 2vw;
+  width: 280px;
   background: rgba(20, 20, 30, 0.93);
   border-radius: 18px;
-  padding: 28px 14px 18px 14px;
-  min-width: 200px;
-  max-width: 240px;
+  padding: 20px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.28);
+  font-size: 1em;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+#inventorySection h2 {
+  margin-bottom: 12px;
+  color: #0af;
   text-align: center;
-  font-size: 1.18em;
+  text-shadow: 0 0 8px #0af;
 }
-.character-preview#charPreview img {
-  width: 100px;
-  height: auto;
-  margin-bottom: 14px;
+
+/* Inventory icons grid: 2 items per row */
+#inventoryIcons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  justify-items: center;
 }
-/* Make inventory images much smaller */
+
 #inventoryIcons img {
-  width: 3px;
-  height: 3px;
+  width: 32px !important;
+  height: 32px !important;
+  margin-bottom: 0 !important;
+  border-radius: 6px;
+  border: 1px solid #2d3a5a;
+  background: #222;
+  box-shadow: 0 1px 4px #0006;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
+
+#inventoryIcons img:hover {
+  transform: scale(1.2);
+  border-color: #ff0;
+  box-shadow: 0 0 12px #ff0;
+}
+
+/* Buttons */
 .button {
   margin: 6px 0;
   padding: 8px 18px;
@@ -136,10 +210,15 @@ html, body {
   cursor: pointer;
   font-size: 1em;
   transition: background 0.15s;
+  width: 100%;
+  box-sizing: border-box;
 }
+
 .button:hover {
   background: #3e4b6a;
 }
+
+/* Option groups */
 .option-group {
   margin-bottom: 10px;
 }
